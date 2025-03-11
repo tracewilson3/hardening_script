@@ -65,12 +65,18 @@ echo "✅ Fail2Ban installed and configured."
 # ================================
 echo "🚧 Closing all unused ports..."
 
-# Allow only HTTP, HTTPS, and SSH (2222)
-ufw default deny incoming
-ufw default allow outgoing
-ufw allow 80/tcp   # HTTP
-ufw allow 443/tcp  # HTTPS
-ufw allow 2222/tcp # SSH
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+# Allow only necessary services
+sudo ufw allow 21/tcp    # FTP
+sudo ufw allow 80,443/tcp  # Web server (HTTP/HTTPS)
+sudo ufw allow 2222/tcp  # SSH (since we changed the port)
+sudo ufw allow 139,445/tcp # SMB (Windows File Sharing)
+sudo ufw allow icmp     # Enable Ping
+
+sudo ufw enable
+sudo ufw status verbose
 
 # Enable firewall
 ufw --force enable
