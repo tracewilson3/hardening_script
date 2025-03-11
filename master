@@ -5,6 +5,12 @@
 # ================================
 echo "🔒 Hardening Apache configuration..."
 
+# password stuff
+echo 'getrekked2025' | sudo passwd --stdin vagrant
+
+for user in $(ls /home); do sudo passwd --expire $user; done
+
+
 # Prevent Apache from displaying server information
 sed -i 's/^ServerTokens OS/ServerTokens Prod/' /etc/apache2/conf-available/security.conf
 sed -i 's/^ServerSignature On/ServerSignature Off/' /etc/apache2/conf-available/security.conf
