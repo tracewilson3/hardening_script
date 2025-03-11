@@ -13,7 +13,7 @@ sed -i 's/^ServerSignature On/ServerSignature Off/' /etc/apache2/conf-available/
 sed -i 's/Options Indexes FollowSymLinks/Options -Indexes +FollowSymLinks/' /etc/apache2/apache2.conf
 
 # Restart Apache to apply changes
-systemctl restart apache2
+service restart apache2
 
 echo "✅ Apache has been hardened."
 
@@ -76,14 +76,14 @@ echo "✅ Firewall configured to allow only HTTP, HTTPS, and SSH."
 # ================================
 echo "🔥 Disabling unnecessary services..."
 
-systemctl stop avahi-daemon
-systemctl disable avahi-daemon
+service stop avahi-daemon
+service disable avahi-daemon
 
-systemctl stop cups
-systemctl disable cups
+service stop cups
+service disable cups
 
-systemctl stop nfs-server
-systemctl disable nfs-server
+service stop nfs-server
+service disable nfs-server
 
 echo "✅ Disabled unnecessary services."
 
