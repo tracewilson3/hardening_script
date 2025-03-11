@@ -1,0 +1,96 @@
+#!/bin/bash
+
+# ================================
+# Harden Apache Web Server
+# ================================
+echo "🔒 Hardening Apache configuration..."
+
+# Prevent Apache from displaying server information
+sed -i 's/^ServerTokens OS/ServerTokens Prod/' /etc/apache2/conf-available/security.conf
+sed -i 's/^ServerSignature On/ServerSignature Off/' /etc/apache2/conf-available/security.conf
+
+# Disable directory listing
+sed -i 's/Options Indexes FollowSymLinks/Options -Indexes +FollowSymLinks/' /etc/apache2/apache2.conf
+
+# Restart Apache to apply changes
+systemctl restart apache2
+
+echo "✅ Apache has been hardened."
+
+# ================================
+# Change SSH Port and Disable Root Login
+# ================================
+echo "🔒 Changing SSH Port to 2222 and disabling root login..."
+
+# Modify SSH config
+sed -i 's/#Port 22/Port 2222/' /etc/ssh/sshd_config
+sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
+
+# Restart SSH
+systemctl restart sshd
+
+echo "✅ SSH port changed to 2222 and root login disabled."
+
+# ================================
+# Install and Configure Fail2Ban
+# ================================
+echo "🛡️ Installing Fail2Ban..."
+
+apt-get update -y
+apt-get install -y fail2ban
+
+# Create custom Fail2Ban jail for SSH
+cat <<EOL > /etc/fail2ban/jail.local
+[sshd]
+enabled = true
+port    = 2222
+maxretry = 5
+findtime = 600
+bantime = 3600
+EOL
+
+# Restart Fail2Ban
+systemctl restart fail2ban
+
+echo "✅ Fail2Ban installed and configured."
+
+# ================================
+# Close all unused ports
+# ================================
+echo "🚧 Closing all unused ports..."
+
+# Allow only HTTP, HTTPS, and SSH (2222)
+ufw default deny incoming
+ufw default allow outgoing
+ufw allow 80/tcp   # HTTP
+ufw allow 443/tcp  # HTTPS
+ufw allow 2222/tcp # SSH
+
+# Enable firewall
+ufw --force enable
+
+echo "✅ Firewall configured to allow only HTTP, HTTPS, and SSH."
+
+# ================================
+# Disable uncommon services
+# ================================
+echo "🔥 Disabling unnecessary services..."
+
+systemctl stop avahi-daemon
+systemctl disable avahi-daemon
+
+systemctl stop cups
+systemctl disable cups
+
+systemctl stop nfs-server
+systemctl disable nfs-server
+
+echo "✅ Disabled unnecessary services."
+
+# ================================
+# Final Steps
+# ================================
+echo "✅ All hardening complete!"
+echo "🚀 Your server is now hardened and locked down."
+echo "👉 Remember to connect via SSH like this:"
+echo "    ssh -p 2222 <username>@<server-ip>"
